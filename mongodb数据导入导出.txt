@@ -1,0 +1,144 @@
+一、Mongodb导出工具mongoexport
+
+Mongodb中的mongoexport工具可以把一个collection导出成JSON格式或CSV格式(类似于表格的形式)的文件。可以通过参数指定导出的数据项，也可以根据指定的条件导出数据。
+mongoexport具体用法
+
+C:\mongo\bin>mongoexport -help  
+options:  
+  --help                  produce help message  
+  -v [ --verbose ]        be more verbose (include multiple times for more  
+                          verbosity e.g. -vvvvv)  
+  -h [ --host ] arg       mongo host to connect to ( <set name>/s1,s2 for sets)  
+  --port arg              server port. Can also use --host hostname:port  
+  --ipv6                  enable IPv6 support (disabled by default)  
+  -u [ --username ] arg   username  
+  -p [ --password ] arg   password  
+  --dbpath arg            directly access mongod database files in the given  
+                          path, instead of connecting to a mongod  server -  
+                          needs to lock the data directory, so cannot be used  
+                          if a mongod is currently accessing the same path  
+  --directoryperdb        if dbpath specified, each db is in a separate  
+                          directory  
+  -d [ --db ] arg         database to use  
+  -c [ --collection ] arg collection to use (some commands)  
+  -f [ --fields ] arg     comma separated list of field names e.g. -f name,age  
+  --fieldFile arg         file with fields names - 1 per line  
+  -q [ --query ] arg      query filter, as a JSON string  
+  --csv                   export to csv instead of json  
+  -o [ --out ] arg        output file; if not specified, stdout is used  
+  --jsonArray             output to a json array rather than one object per  
+                          Line 
+
+?
+参数说明
+-h:指明数据库宿主机的IP
+-u:指明数据库的用户名
+-p:指明数据库的密码
+-d:指明数据库的名字
+-c:指明collection的名字
+-f:指明要导出那些列
+-o:指明到要导出的文件名
+-q:指明导出数据的过滤条件
+
+二、常用数据导出实例
+
+1.直接导出数据到文件中
+
+复制代码代码如下:
+
+[root@localhost bin]# ./mongoexport -d my_mongodb -c user -o user.dat
+connected to: 127.0.0.1
+exported 2 records
+[root@localhost bin]# cat user.dat
+{ "_id" : { "$oid" : "4f81a4a1779282ca68fd8a5a" }, "uid" : 2, "username" : "Jerry", "age" : 100 }
+{ "_id" : { "$oid" : "4f844d1847d25a9ce5f120c4" }, "uid" : 1, "username" : "Tom", "age" : 25 }
+[root@localhost bin]#
+命令执行完后使用命令查看，会发现目录下生成了一个students.dat的文件
+
+参数说明
+
+-d 指明使用的库, 本例中为” my_mongodb”
+-c 指明要导出的表, 本例中为”user”
+-o 指明要导出的文件名, 本例中为”user.dat”
+从上面可以看到导出的方式使用的是JSON 的样式 
+
+2、将foo库中的表t1导出成json格式
+
+复制代码代码如下:
+
+[root@localhost bin]# ./mongoexport -d foo -c t1 -o /data/t1.json   
+connected to: 127.0.0.1   
+exported 1 records   
+[root@localhost bin]# 
+导出成功后我们看一下/data/t1.json文件的样式
+
+ 
+
+复制代码代码如下:
+
+root@localhost data]# more t1.json   
+{ "_id" : { "$oid" : "4f927e2385b7a6814a0540a0" }, "age" : 2 }   
+[root@localhost data]# 
+3、导出为CSV格式的数据
+
+复制代码代码如下:
+
+[root@localhost bin]# ./mongoexport -d foo -c t2 --csv -f age,name -o /data/t2.csv   
+connected to: 127.0.0.1   
+exported 1 records   
+[root@localhost bin]# 
+查看/data/t2.csv的导出结果
+
+复制代码代码如下:
+ mongoexport -h 10.100.30.130 --port 27017 -d zhongtudao -c hand_result --type=csv -f datetime,url,show_count,click_count -q '{datetime:"20170402"}' -o ./20170402.csv
+4、指定过滤条件导出数据：
+-q 参数的使用方法是：-q '{key:"value"}'
+
+代码如下:
+ mongoexport -h 10.100.30.130 --port 27017 -d zhongtudao -c hand_result --type=csv -f datetime,url,show_count,click_count -q '{datetime:"20170402"}' -o ./20170402.csv
+
+
+三、Mongodb导入工具mongoexport
+Mongodb中的mongoimport工具可以把一个特定格式文件中的内容导入到指定的collection中。该工具可以导入JSON格式数据，也可以导入CSV格式数据。
+ 
+具体使用如下：
+
+
+
+
+参数说明
+ 
+-h:指明数据库宿主机的IP
+-u:指明数据库的用户名
+-p:指明数据库的密码
+-d:指明数据库的名字
+-c:指明collection的名字
+-f:指明要导入那些列
+
+四、常用数据导入实例
+
+1、导入JSON 数据
+
+复制代码代码如下:
+
+[root@localhost mongodb]# ./bin/mongoimport -d test -c students students.dat   
+connected to: 127.0.0.1  
+imported 9 objects  
+[root@localhost mongodb]#   
+参数说明
+-d:指明数据库名，本例中为test
+-c:指明collection名，本例中为students
+students.dat：导入的文件名
+
+2、导入CSV格式文件中的内容
+
+复制代码代码如下:
+
+[root@localhost mongodb]# ./bin/mongoimport -d test -c students --type csv --headerline --file students_csv.dat  
+connected to: 127.0.0.1 
+imported 10 objects 
+[root@localhost mongodb]#  
+参数说明：
+-type:指明要导入的文件格式
+-headerline:指明第一行是列名，不需要导入
+-file：指明要导入的文件

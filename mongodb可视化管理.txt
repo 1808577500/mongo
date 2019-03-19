@@ -1,0 +1,1 @@
+解压即可按照里面的的文件的步骤使用（先在 web/rockmongo/config.php 文件里配置ip和端口再双击rockstart.bat启动服务即可）
